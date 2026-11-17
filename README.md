@@ -38,6 +38,10 @@ redirects. Vercel collects the files from `static/` into `staticfiles/` during
 the build and serves them from its CDN.
 
 **Database note:** this project currently uses SQLite for learning and local
-development. Vercel serverless deployments do not provide durable local
-database storage, so records and logins created there may not persist. Use a
-managed database if the deployed demonstration needs to retain data.
+development. For Vercel, configure `DATABASE_URL` with a managed PostgreSQL
+connection string. The production build runs database migrations. To create
+the initial administrator, set `DJANGO_BOOTSTRAP_ADMIN_USERNAME` and
+`DJANGO_BOOTSTRAP_ADMIN_PASSWORD` in the Vercel Production environment; the
+password must be at least 16 characters. The build creates this account only
+if it does not already exist. Remove both variables after the first successful
+deployment, and do not reuse default or shared credentials.
