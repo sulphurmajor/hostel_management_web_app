@@ -45,3 +45,12 @@ the initial administrator, set `DJANGO_BOOTSTRAP_ADMIN_USERNAME` and
 password must be at least 16 characters. The build creates this account only
 if it does not already exist. Remove both variables after the first successful
 deployment, and do not reuse default or shared credentials.
+
+For a one-time password reset of an existing administrator, set
+`DJANGO_RESET_ADMIN_PASSWORD_ONCE=1` together with the administrator username
+and password variables in Production, then redeploy. This allows a shorter
+password for that reset only. Remove all three variables immediately after a
+successful deployment; otherwise future builds can reset the password again
+or fail the bootstrap password-length check.
+Because shared passwords expose administrator access, use this only for an
+explicitly approved grading window and change it immediately afterward.
