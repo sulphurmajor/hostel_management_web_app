@@ -125,7 +125,21 @@ def _management_context(entity, config, form, success_message=""):
 
 
 def index_view(request):
-    return render(request, "index.html")
+    context = {}
+    if request.user.is_authenticated:
+        total_rooms = room.objects.count()
+        occupied_rooms = room.objects.filter(status="O").count()
+        context = {
+            "student_count": Student.objects.count(),
+            "hostel_count": Hostel.objects.count(),
+            "warden_count": Warden.objects.count(),
+            "room_count": total_rooms,
+            "available_room_count": room.objects.filter(status="A").count(),
+            "occupancy_rate": round(occupied_rooms / total_rooms * 100) if total_rooms else 0,
+            "recent_students": Student.objects.select_related("hostel").order_by("-pk")[:5],
+            "recent_payments": Payments.objects.select_related("student").order_by("-date", "-pk")[:5],
+        }
+    return render(request, "index.html", context)
 
 
 @login_required

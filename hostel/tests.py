@@ -126,3 +126,32 @@ class AuthenticationTests(TestCase):
             self.client.get(reverse("student_form")),
             f"{reverse('login')}?next={reverse('student_form')}",
         )
+
+    def test_dashboard_shows_current_counts_and_recent_records(self):
+        manager = get_user_model().objects.get(username="test-admin")
+        self.client.force_login(manager)
+        hostel = Hostel.objects.create(
+            name="Sunrise",
+            address="Kampala",
+            total_rooms=2,
+            location="Central",
+        )
+        Student.objects.create(
+            first_name="Amina",
+            last_name="Nabirye",
+            email="amina@example.com",
+            birth_date="2004-05-12",
+            hostel=hostel,
+        )
+        room.objects.create(room_number=1, capacity=2, hostel=hostel, status="O")
+        room.objects.create(room_number=2, capacity=2, hostel=hostel, status="A")
+
+        response = self.client.get(reverse("index_view"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["student_count"], 1)
+        self.assertEqual(response.context["hostel_count"], 1)
+        self.assertEqual(response.context["room_count"], 2)
+        self.assertEqual(response.context["available_room_count"], 1)
+        self.assertEqual(response.context["occupancy_rate"], 50)
+        self.assertContains(response, "Amina Nabirye")

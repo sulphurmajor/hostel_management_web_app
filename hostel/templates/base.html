@@ -10,34 +10,72 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+    {% if user.is_authenticated %}
+    <div class="admin-shell">
+        <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="adminSidebar" aria-labelledby="sidebarTitle">
+            <div class="sidebar-heading">
+                <a class="sidebar-brand" id="sidebarTitle" href="{% url 'index_view' %}">
+                    <span class="brand-mark">H</span>
+                    <span>Hostel<span class="brand-light">Web</span></span>
+                </a>
+                <button class="btn-close btn-close-white d-lg-none" type="button" data-bs-dismiss="offcanvas" aria-label="Close menu"></button>
+            </div>
+            <nav class="sidebar-nav" aria-label="Main navigation">
+                <span class="nav-section-label">Workspace</span>
+                <a class="sidebar-link{% if request.path == '/' %} active{% endif %}" href="{% url 'index_view' %}">
+                    <span class="sidebar-link-icon">◫</span> Overview
+                </a>
+                <span class="nav-section-label mt-4">Management</span>
+                <a class="sidebar-link{% if '/students/' in request.path %} active{% endif %}" href="{% url 'student_form' %}">
+                    <span class="sidebar-link-icon">♙</span> Students
+                </a>
+                <a class="sidebar-link{% if '/hostels/' in request.path %} active{% endif %}" href="{% url 'hostel_form' %}">
+                    <span class="sidebar-link-icon">⌂</span> Hostels
+                </a>
+                <a class="sidebar-link{% if '/wardens/' in request.path %} active{% endif %}" href="{% url 'warden_form' %}">
+                    <span class="sidebar-link-icon">♧</span> Wardens
+                </a>
+                <a class="sidebar-link{% if '/rooms/' in request.path %} active{% endif %}" href="{% url 'room_form' %}">
+                    <span class="sidebar-link-icon">▦</span> Rooms
+                </a>
+                <a class="sidebar-link{% if '/payments/' in request.path %} active{% endif %}" href="{% url 'payments_view' %}">
+                    <span class="sidebar-link-icon">◉</span> Payments
+                </a>
+                <a class="sidebar-link{% if '/visitors/' in request.path %} active{% endif %}" href="{% url 'visitor_form' %}">
+                    <span class="sidebar-link-icon">♧</span> Visitors
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <span class="user-avatar">{{ user.username|first|upper }}</span>
+                <span class="sidebar-user-name">{{ user.username }}</span>
+            </div>
+        </aside>
+        <div class="admin-main">
+            <header class="topbar">
+                <button class="btn btn-menu d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar" aria-label="Open navigation">
+                    <span aria-hidden="true">☰</span>
+                </button>
+                <span class="topbar-label">Hostel administration</span>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="btn btn-signout" type="submit">Sign out <span aria-hidden="true">↗</span></button>
+                </form>
+            </header>
+    {% else %}
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand fw-bold" href="{% url 'index_view' %}">HostelWeb</a>
-            <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavigation" aria-controls="mainNavigation" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="mainNavigation">
-                <div class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                    <a class="nav-link" href="{% url 'student_form' %}">Students</a>
-                    <a class="nav-link" href="{% url 'hostel_form' %}">Hostels</a>
-                    <a class="nav-link" href="{% url 'warden_form' %}">Wardens</a>
-                    <a class="nav-link" href="{% url 'room_form' %}">Rooms</a>
-                    <a class="nav-link" href="{% url 'payments_view' %}">Payments</a>
-                    <a class="nav-link" href="{% url 'visitor_form' %}">Visitors</a>
-                    <span class="navbar-text text-white-50 px-3">{{ user.username }}</span>
-                    <form class="d-flex" method="post" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <button class="btn btn-outline-light btn-sm" type="submit">Sign out</button>
-                    </form>
-                    {% else %}
-                    <a class="nav-link" href="{% url 'login' %}">Sign in</a>
-                    {% endif %}
-                </div>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{% url 'login' %}">Sign in</a>
             </div>
         </div>
     </nav>
+    {% endif %}
     {% block content %}{% endblock %}
+    {% if user.is_authenticated %}
+    </div>
+    </div>
+    {% endif %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,32 +1,127 @@
 {% extends "base.html" %}
 {% block title %}Home | HostelWeb{% endblock %}
 {% block content %}
-<main class="container py-5">
-    <section class="card p-4 p-md-5 mb-4 text-white hero-banner">
-        <p class="text-uppercase small fw-semibold mb-2">Hostel management made simple</p>
-        <h1 class="display-5 fw-bold">Welcome to HostelWeb</h1>
-        <p class="lead mb-0">Manage residents, rooms, staff, payments, and visits from one place.</p>
-    </section>
     {% if user.is_authenticated %}
-    <h2 class="h4 page-heading mb-3">Management</h2>
-    <div class="row g-3">
-        {% url 'student_form' as students_url %}
-        {% url 'hostel_form' as hostels_url %}
-        {% url 'warden_form' as wardens_url %}
-        {% url 'room_form' as rooms_url %}
-        {% url 'payments_view' as payments_url %}
-        {% url 'visitor_form' as visitors_url %}
-        <div class="col-sm-6 col-lg-4"><a class="card p-4 h-100 text-decoration-none text-reset" href="{{ students_url }}"><h3 class="h5">Students</h3><span class="text-muted">Add and manage student records</span></a></div>
-        <div class="col-sm-6 col-lg-4"><a class="card p-4 h-100 text-decoration-none text-reset" href="{{ hostels_url }}"><h3 class="h5">Hostels</h3><span class="text-muted">Manage hostel details</span></a></div>
-        <div class="col-sm-6 col-lg-4"><a class="card p-4 h-100 text-decoration-none text-reset" href="{{ wardens_url }}"><h3 class="h5">Wardens</h3><span class="text-muted">Manage hostel staff</span></a></div>
-        <div class="col-sm-6 col-lg-4"><a class="card p-4 h-100 text-decoration-none text-reset" href="{{ rooms_url }}"><h3 class="h5">Rooms</h3><span class="text-muted">Track rooms and availability</span></a></div>
-        <div class="col-sm-6 col-lg-4"><a class="card p-4 h-100 text-decoration-none text-reset" href="{{ payments_url }}"><h3 class="h5">Payments</h3><span class="text-muted">Record and review payments</span></a></div>
-        <div class="col-sm-6 col-lg-4"><a class="card p-4 h-100 text-decoration-none text-reset" href="{{ visitors_url }}"><h3 class="h5">Visitors</h3><span class="text-muted">Keep a visitor register</span></a></div>
-    </div>
+    <main class="dashboard-content">
+        <section class="welcome-row">
+            <div>
+                <p class="eyebrow">YOUR HOSTEL AT A GLANCE</p>
+                <h1>Welcome back, {{ user.username }}</h1>
+                <p class="welcome-subtitle">Here’s what’s happening across your properties today.</p>
+            </div>
+            <a class="btn btn-primary dashboard-add-btn" href="{% url 'student_form' %}"><span aria-hidden="true">+</span> Add a student</a>
+        </section>
+
+        <section class="row g-3 g-xl-4 stats-grid" aria-label="Hostel statistics">
+            <div class="col-6 col-xl-3">
+                <article class="stat-card">
+                    <span class="stat-icon stat-icon-purple">♙</span>
+                    <p class="stat-label">Total students</p>
+                    <p class="stat-value">{{ student_count }}</p>
+                    <a href="{% url 'student_form' %}" class="stat-link">Manage students <span aria-hidden="true">→</span></a>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="stat-card">
+                    <span class="stat-icon stat-icon-blue">⌂</span>
+                    <p class="stat-label">Hostels</p>
+                    <p class="stat-value">{{ hostel_count }}</p>
+                    <a href="{% url 'hostel_form' %}" class="stat-link">Manage hostels <span aria-hidden="true">→</span></a>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="stat-card">
+                    <span class="stat-icon stat-icon-green">▦</span>
+                    <p class="stat-label">Total rooms</p>
+                    <p class="stat-value">{{ room_count }}</p>
+                    <a href="{% url 'room_form' %}" class="stat-link">Manage rooms <span aria-hidden="true">→</span></a>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="stat-card">
+                    <span class="stat-icon stat-icon-orange">♧</span>
+                    <p class="stat-label">Wardens</p>
+                    <p class="stat-value">{{ warden_count }}</p>
+                    <a href="{% url 'warden_form' %}" class="stat-link">Manage wardens <span aria-hidden="true">→</span></a>
+                </article>
+            </div>
+        </section>
+
+        <section class="row g-3 g-xl-4 dashboard-lower">
+            <div class="col-xl-8">
+                <article class="dashboard-panel h-100">
+                    <div class="panel-heading">
+                        <div><h2>Recent students</h2><p>The latest residents added to your hostels.</p></div>
+                        <a class="panel-link" href="{% url 'student_form' %}">View all <span aria-hidden="true">→</span></a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table dashboard-table align-middle mb-0">
+                            <thead><tr><th scope="col">Student</th><th scope="col">Email</th><th scope="col">Hostel</th></tr></thead>
+                            <tbody>
+                                {% for student in recent_students %}
+                                <tr>
+                                    <td><span class="student-avatar">{{ student.first_name|first|upper }}</span><span class="student-name">{{ student.first_name }} {{ student.last_name }}</span></td>
+                                    <td class="muted-cell">{{ student.email }}</td>
+                                    <td class="muted-cell">{{ student.hostel|default:"Not assigned" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td class="empty-state" colspan="3">No students yet. Add your first student to get started.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+            <div class="col-xl-4">
+                <article class="dashboard-panel occupancy-panel h-100">
+                    <div class="panel-heading">
+                        <div><h2>Room occupancy</h2><p>Current room availability</p></div>
+                        <a class="panel-link" href="{% url 'room_form' %}">Rooms</a>
+                    </div>
+                    <div class="occupancy-summary">
+                        <span class="occupancy-rate">{{ occupancy_rate }}<small>%</small></span>
+                        <span class="occupancy-caption">of rooms occupied</span>
+                    </div>
+                    <div class="progress occupancy-progress" role="progressbar" aria-label="Room occupancy" aria-valuenow="{{ occupancy_rate }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar" style="width: {{ occupancy_rate }}%"></div>
+                    </div>
+                    <div class="occupancy-legend">
+                        <span><i class="legend-dot occupied-dot"></i>Occupied</span>
+                        <a href="{% url 'room_form' %}"><i class="legend-dot available-dot"></i>{{ available_room_count }} available</a>
+                    </div>
+                    <div class="panel-divider"></div>
+                    <div class="panel-heading recent-payment-heading">
+                        <div><h2>Recent payments</h2><p>Latest recorded transactions</p></div>
+                        <a class="panel-link" href="{% url 'payments_view' %}">All</a>
+                    </div>
+                    <div class="payment-list">
+                        {% for payment in recent_payments %}
+                        <div class="payment-row">
+                            <span class="payment-mark">↗</span>
+                            <span class="payment-info">
+                                <strong>{{ payment.student|default:"Unassigned student" }}</strong>
+                                <small>{{ payment.date|date:"M j, Y" }}</small>
+                            </span>
+                            <span class="payment-amount">{{ payment.amount }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="empty-payment">No payments recorded yet.</p>
+                        {% endfor %}
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
     {% else %}
-    <section class="card p-4">
-        <div><a class="btn btn-primary" href="{% url 'login' %}">Sign in</a></div>
-    </section>
-    {% endif %}
+    <main class="container py-5">
+        <section class="card p-4 p-md-5 mb-4 text-white hero-banner">
+            <p class="text-uppercase small fw-semibold mb-2">Hostel management made simple</p>
+            <h1 class="display-5 fw-bold">Welcome to HostelWeb</h1>
+            <p class="lead mb-0">Manage residents, rooms, staff, payments, and visits from one place.</p>
+        </section>
+        <section class="card p-4">
+            <div><a class="btn btn-primary" href="{% url 'login' %}">Sign in</a></div>
+        </section>
 </main>
+    {% endif %}
 {% endblock %}
