@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import path, reverse_lazy
 
 from hostel.views import (
     hostel_form_view,
@@ -37,6 +37,19 @@ from hostel.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path(
+        'password/change/',
+        auth_views.PasswordChangeView.as_view(
+            template_name='password_change.html',
+            success_url=reverse_lazy('password_change_done'),
+        ),
+        name='password_change',
+    ),
+    path(
+        'password/change/done/',
+        auth_views.PasswordChangeDoneView.as_view(template_name='password_change_done.html'),
+        name='password_change_done',
+    ),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('', index_view, name="index_view"),
     path('payments/', payments_view, name='payments_view'),

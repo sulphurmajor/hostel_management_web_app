@@ -37,12 +37,13 @@ collected static files. SQLite remains available for local development; the
 Render deployment requires PostgreSQL because service filesystems are
 ephemeral.
 
-After the first successful deploy, open the service's Shell and create the
-administrator account:
-
-```sh
-python manage.py createsuperuser
-```
+After the first successful deploy, set `DJANGO_ADMIN_PASSWORD` in the web
+service's Render environment settings and deploy. The build creates the first
+superuser as `admin` only when that variable is present. You can optionally set
+`DJANGO_ADMIN_EMAIL`. Remove `DJANGO_ADMIN_PASSWORD` after the first successful
+admin setup; future builds leave the existing password unchanged. Sign in at
+`/login/` or `/admin/`. Once signed in, use **Change password** in the top bar
+or visit `/password/change/`.
 
 Keep deployment secrets private. `DEBUG` is disabled in production, and the
 Render hostname is added to Django's allowed hosts and CSRF trusted origins.
