@@ -24,13 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-IS_VERCEL = os.environ.get("VERCEL") == "1"
-DEBUG = os.environ.get("DJANGO_DEBUG", "False" if IS_VERCEL else "True").lower() == "true"
+RENDER_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+IS_RENDER = os.environ.get("RENDER") == "true" or bool(RENDER_HOSTNAME)
+DEBUG = os.environ.get("DJANGO_DEBUG", "False" if IS_RENDER else "True").lower() == "true"
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
-    if IS_VERCEL:
-        raise ImproperlyConfigured("Set DJANGO_SECRET_KEY in the Vercel project environment variables.")
+    if IS_RENDER or not DEBUG:
+        raise ImproperlyConfigured("Set DJANGO_SECRET_KEY in the deployment environment variables.")
     SECRET_KEY = secrets.token_urlsafe(50)
 
 
@@ -39,14 +40,11 @@ def _environment_list(name):
 
 
 ALLOWED_HOSTS = _environment_list("DJANGO_ALLOWED_HOSTS") or ["localhost", "127.0.0.1"]
-VERCEL_HOSTS = [
-    os.environ[name]
-    for name in ("VERCEL_URL", "VERCEL_PROJECT_PRODUCTION_URL")
-    if os.environ.get(name)
-]
-ALLOWED_HOSTS.extend(VERCEL_HOSTS)
+if RENDER_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
 CSRF_TRUSTED_ORIGINS = _environment_list("DJANGO_CSRF_TRUSTED_ORIGINS")
-CSRF_TRUSTED_ORIGINS.extend(f"https://{host}" for host in VERCEL_HOSTS)
+if RENDER_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_HOSTNAME}")
 
 
 # Application definition
@@ -68,6 +66,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -100,6 +99,8 @@ WSGI_APPLICATION = 'hostelman.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+if IS_RENDER and not DATABASE_URL:
+    raise ImproperlyConfigured("Set DATABASE_URL to the Render PostgreSQL connection string.")
 if DATABASE_URL:
     IS_POSTGRES = DATABASE_URL.lower().startswith(("postgres://", "postgresql://"))
     DATABASES = {
@@ -156,6 +157,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "index_view"

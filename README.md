@@ -23,34 +23,26 @@ The local SQLite database is intentionally excluded from Git. Create your own
 administrator account in each environment; do not publish the database or use
 a shared default password.
 
-## Vercel environment variables
+## Deploy to Render
 
-Set these in the Vercel project's environment-variable settings:
+The repository includes a Render Blueprint (`render.yaml`) that creates a
+Django web service and a PostgreSQL database. In Render, choose **New**
+> **Blueprint** and connect this repository. Render reads the build and start
+commands, links `DATABASE_URL` to the database, and generates
+`DJANGO_SECRET_KEY`.
 
-- `DJANGO_SECRET_KEY`: a long, random secret value; keep it private.
-- `DJANGO_ALLOWED_HOSTS`: comma-separated Vercel hostnames, without `https://`.
-- `DJANGO_CSRF_TRUSTED_ORIGINS`: full origins such as `https://your-site.vercel.app`.
+The build installs dependencies and collects static files. On each service
+start, database migrations run before Gunicorn starts. WhiteNoise serves the
+collected static files. SQLite remains available for local development; the
+Render deployment requires PostgreSQL because service filesystems are
+ephemeral.
 
-Vercel automatically provides `VERCEL_URL` and
-`VERCEL_PROJECT_PRODUCTION_URL`, which are also allowed by the Django settings.
-Production mode disables debug output and enables secure cookies and HTTPS
-redirects. Vercel collects the files from `static/` into `staticfiles/` during
-the build and serves them from its CDN.
+After the first successful deploy, open the service's Shell and create the
+administrator account:
 
-**Database note:** this project currently uses SQLite for learning and local
-development. For Vercel, configure `DATABASE_URL` with a managed PostgreSQL
-connection string. The production build runs database migrations. To create
-the initial administrator, set `DJANGO_BOOTSTRAP_ADMIN_USERNAME` and
-`DJANGO_BOOTSTRAP_ADMIN_PASSWORD` in the Vercel Production environment; the
-password must be at least 16 characters. The build creates this account only
-if it does not already exist. Remove both variables after the first successful
-deployment, and do not reuse default or shared credentials.
+```sh
+python manage.py createsuperuser
+```
 
-For a one-time password reset of an existing administrator, set
-`DJANGO_RESET_ADMIN_PASSWORD_ONCE=1` together with the administrator username
-and password variables in Production, then redeploy. This allows a shorter
-password for that reset only. Remove all three variables immediately after a
-successful deployment; otherwise future builds can reset the password again
-or fail the bootstrap password-length check.
-Because shared passwords expose administrator access, use this only for an
-explicitly approved grading window and change it immediately afterward.
+Keep deployment secrets private. `DEBUG` is disabled in production, and the
+Render hostname is added to Django's allowed hosts and CSRF trusted origins.
