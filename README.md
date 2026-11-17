@@ -1,4 +1,4 @@
-# Hostel Management System
+# Hostel Management web app
 
 A Django-based hostel management application for managing students, hostels, wardens, rooms, payments, and visitor records.
 
