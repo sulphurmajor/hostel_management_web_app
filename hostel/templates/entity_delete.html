@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ title }} | HostelWeb{% endblock %}
+{% block content %}
+<main class="container py-5">
+    <div class="card p-4 mx-auto delete-card">
+        <h1 class="h3 page-heading">Delete {{ title|slice:":-1" }}?</h1>
+        <p>Are you sure you want to delete <strong>{{ item }}</strong>? This action cannot be undone.</p>
+        <form method="post">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Yes, delete</button>
+            <a class="btn btn-outline-secondary" href="{% url 'entity_manage' entity=entity %}">Cancel</a>
+            <a class="btn btn-link" href="{% url 'index_view' %}">Home</a>
+        </form>
+    </div>
+</main>
+{% endblock %}

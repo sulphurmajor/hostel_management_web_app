@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{{ title }} | HostelWeb{% endblock %}
+{% block content %}
+<main class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div><h1 class="page-heading mb-1">{{ title }}</h1><p class="text-muted mb-0">Create, update, and remove {{ title|lower }} records.</p></div>
+        <a class="btn btn-outline-secondary" href="{% url 'index_view' %}">Home</a>
+    </div>
+    {% if success_message %}<div class="alert alert-success" role="status">{{ success_message }}</div>{% endif %}
+    <section class="card p-4 mb-4">
+        <h2 class="h5 mb-3">Add {{ title|slice:":-1" }}</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button class="btn btn-primary px-4" type="submit">Save {{ title|slice:":-1" }}</button>
+        </form>
+    </section>
+    <section class="card p-4">
+        <h2 class="h5 mb-3">All {{ title }}</h2>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr>{% for column in columns %}<th scope="col">{{ column }}</th>{% endfor %}<th scope="col">Actions</th></tr></thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        {% for cell in record.cells %}<td>{{ cell }}</td>{% endfor %}
+                        <td class="text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" href="{{ record.edit_url }}">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger" href="{{ record.delete_url }}">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="text-center text-muted py-4" colspan="{{ columns|length|add:1 }}">No {{ title|lower }} have been added yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+{% endblock %}

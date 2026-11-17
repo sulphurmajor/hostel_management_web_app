@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Sign in | HostelWeb{% endblock %}
+{% block content %}
+<main class="container py-5">
+    <section class="card p-4 p-md-5 mx-auto login-card">
+        <h1 class="page-heading h2">Sign in</h1>
+        <p class="text-muted">Use your hostel management account to continue.</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            <button class="btn btn-primary w-100" type="submit">Sign in</button>
+        </form>
+        <a class="mt-3 text-center" href="{% url 'index_view' %}">Back to home</a>
+    </section>
+</main>
+{% endblock %}

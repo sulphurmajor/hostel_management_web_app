@@ -1,0 +1,22 @@
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <main class="container py-5">
+        <h1>Payments</h1>
+        <p>Welcome to the payments page!</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ payments_form|crispy }}
+            <button type="submit" class="btn btn-primary">Save Payment</button>
+        </form>
+        <a class="d-inline-block mt-3" href="{% url 'index_view' %}">Back to Homepage</a>
+    </main>
+</body>
+</html>
